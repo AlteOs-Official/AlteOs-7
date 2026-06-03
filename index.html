@@ -1,0 +1,87 @@
+<html>
+<head>
+  <title>AlteOs 7</title>
+
+  <HTA:APPLICATION
+    ID="AlteOs7"
+    APPLICATIONNAME="AlteOs 7"
+    BORDER="none"
+    CAPTION="no"
+    SHOWINTASKBAR="yes"
+    SINGLEINSTANCE="yes"
+    WINDOWSTATE="normal"
+  >
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    #logo {
+      width: 220px;
+      opacity: 0;
+      transform: scale(0.9);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+
+    #bar {
+      position: absolute;
+      bottom: 40px;
+      height: 4px;
+      width: 300px;
+      background: white;
+      border-radius: 999px;
+      opacity: 0;
+      left: -350px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <img id="logo" src="assets/logo.png">
+  <div id="bar"></div>
+
+  <script>
+    // Apparition du logo
+    setTimeout(function () {
+      var logo = document.getElementById("logo");
+      logo.style.opacity = "1";
+      logo.style.transform = "scale(1)";
+    }, 800);
+
+    // Barre moderne qui glisse de gauche à droite
+    setTimeout(function () {
+      var bar = document.getElementById("bar");
+      bar.style.opacity = "1";
+
+      var pos = -350;
+      var speed = 8;
+
+      var anim = setInterval(function () {
+        pos += speed;
+        bar.style.left = pos + "px";
+
+        if (pos > document.body.clientWidth) {
+          pos = -350;
+        }
+      }, 10);
+    }, 1500);
+
+    // REDIRECTION vers AlteOs7home.hta après 4 secondes
+    setTimeout(function () {
+      window.location = "AlteOs7home.hta";
+    }, 4000);
+  </script>
+
+</body>
+</html>
