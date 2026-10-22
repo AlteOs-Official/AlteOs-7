@@ -34,8 +34,9 @@ iso: kernel
 	mkdir -p $(BUILD)/iso/boot/limine
 	cp $(KERNEL) $(BUILD)/iso/boot/alteous7.elf
 	cp limine.conf $(BUILD)/iso/limine.conf
+	cp boot/limine/limine-bios.sys $(BUILD)/iso/limine-bios.sys
 	cp boot/limine/limine-bios.sys boot/limine/limine-bios-cd.bin boot/limine/limine-uefi-cd.bin $(BUILD)/iso/boot/limine/
-	xorriso -as mkisofs -R -r -J -b boot/limine/limine-bios-cd.bin -no-emul-boot -boot-load-size 4 -boot-info-table --efi-boot boot/limine/limine-uefi-cd.bin -efi-boot-part --efi-boot-image --protective-msdos-label $(BUILD)/iso -o $(BUILD)/alteous7.iso
+	xorriso -as mkisofs -R -r -J -b boot/limine/limine-bios-cd.bin -no-emul-boot -boot-load-size 4 -boot-info-table --efi-boot boot/limine/limine-uefi-cd.bin -efi-boot-part --efi-boot-image --protective-msdos-label -o $(BUILD)/alteous7.iso $(BUILD)/iso
 	@echo "ISO created: $(BUILD)/alteous7.iso"
 
 clean:
