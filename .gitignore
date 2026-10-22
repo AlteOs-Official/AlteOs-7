@@ -1,0 +1,8 @@
+build/
+*.o
+*.elf
+*.iso
+*.img
+boot/limine/*
+!boot/limine/.gitkeep
+.cache/
