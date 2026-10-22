@@ -1,0 +1,77 @@
+name: AlteOS 7 kernel ISO
+
+on:
+  push:
+    branches:
+      - kernel-iso-build
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-smoke-test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build and test tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential binutils xorriso mtools nasm qemu-system-x86
+
+      - name: Build pinned Limine bootloader
+        run: |
+          git clone --depth=1 --branch=v8.x-binary https://github.com/limine-bootloader/limine.git /tmp/limine
+          make -C /tmp/limine
+          mkdir -p boot/limine
+          cp /tmp/limine/limine-bios.sys /tmp/limine/limine-bios-cd.bin /tmp/limine/limine-uefi-cd.bin boot/limine/
+          test -x /tmp/limine/limine
+
+      - name: Check sources and build kernel
+        run: |
+          make check
+          make clean kernel verify
+
+      - name: Create bootable ISO
+        run: |
+          make iso
+          /tmp/limine/limine bios-install build/alteous7.iso
+          test -s build/alteous7.iso
+          ls -lh build/alteous7.iso
+          sha256sum build/alteous7.iso build/alteous7.elf | tee build/SHA256SUMS.txt
+
+      - name: QEMU BIOS boot smoke test
+        shell: bash
+        run: |
+          set +e
+          timeout 15s qemu-system-x86_64 \
+            -machine q35,accel=tcg -m 512M \
+            -cdrom build/alteous7.iso -boot d \
+            -display none -serial stdio -monitor none \
+            -no-reboot -no-shutdown > build/qemu-serial.log 2>&1
+          qemu_status=$?
+          set -e
+          cat build/qemu-serial.log
+          if [ "$qemu_status" -ne 0 ] && [ "$qemu_status" -ne 124 ]; then
+            echo "QEMU exited unexpectedly with status $qemu_status"
+            exit "$qemu_status"
+          fi
+          grep -F "AlteOS 7 kernel: boot entry reached." build/qemu-serial.log
+          grep -F "Kernel idle loop entered." build/qemu-serial.log
+          echo "QEMU serial smoke test passed."
+
+      - name: Upload ISO and diagnostic artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: alteos7-development-iso
+          path: |
+            build/alteous7.iso
+            build/alteous7.elf
+            build/SHA256SUMS.txt
+            build/qemu-serial.log
+          if-no-files-found: warn
+          retention-days: 14
